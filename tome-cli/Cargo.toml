@@ -1,0 +1,27 @@
+[package]
+name = "tome-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "CLI for Tome — query TLD info, DNS record types, and domain name terminology"
+keywords = ["dns", "tld", "domain", "cli", "reference"]
+categories = ["command-line-utilities", "network-programming"]
+
+[[bin]]
+name = "tome"
+path = "src/main.rs"
+
+[dependencies]
+tome-core = { version = "0.1.0", path = "../tome-core" }
+clap = { workspace = true }
+clap_complete = { workspace = true }
+colored = { workspace = true }
+comfy-table = { workspace = true }
+crossterm = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow = { workspace = true }

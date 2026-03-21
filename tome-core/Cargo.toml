@@ -1,0 +1,20 @@
+[package]
+name = "tome-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Core library for Tome — a reference database for internet TLDs, DNS record types, and domain name terminology"
+keywords = ["dns", "tld", "domain", "reference", "glossary"]
+categories = ["network-programming", "data-structures"]
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+once_cell = { workspace = true }
+chrono = { workspace = true }
+
+[dev-dependencies]
+tokio-test = "0.4"
