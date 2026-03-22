@@ -56,41 +56,127 @@ impl std::fmt::Display for DnssecSupport {
     }
 }
 
+/// Contact requirements for a specific contact type (registrant, admin, billing, tech).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ContactRequirements {
+    /// Contact type: "registrant", "admin", "billing", or "tech"
+    pub contact_type: String,
+    /// Minimum number of contacts required
+    pub min: Option<u32>,
+    /// Maximum number of contacts allowed
+    pub max: Option<u32>,
+    /// Whether this contact type is required
+    pub required: Option<bool>,
+    /// Whether an organization name is allowed
+    pub organization_allowed: Option<bool>,
+    /// Whether an organization name is required
+    pub organization_required: Option<bool>,
+    /// Contact scope: "registry", "registry_partial", "registrar", "ignored"
+    pub scope: Option<String>,
+}
+
 /// Comprehensive information about a top-level domain.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Tld {
+    // -- Core identity --
     /// The TLD string (e.g., "com", "uk", "app")
     pub tld: String,
-
     /// Classification of this TLD
     pub tld_type: TldType,
-
     /// Full name or description
     pub name: String,
-
     /// The registry operator
     pub registry: String,
 
+    // -- IANA reference data --
     /// WHOIS server hostname, if available
     pub whois_server: Option<String>,
-
     /// RDAP base URL, if available
     pub rdap_url: Option<String>,
-
     /// DNSSEC support status
     pub dnssec: DnssecSupport,
-
-    /// IDN (Internationalized Domain Name) support
-    pub idn_support: bool,
-
-    /// Registration restrictions or policies, if any
-    pub restrictions: Option<String>,
-
     /// Date the TLD was delegated to the root zone (YYYY-MM-DD)
     pub delegation_date: Option<String>,
-
     /// Relevant RFCs or IANA references
     pub references: Vec<String>,
+
+    // -- Domain syntax --
+    /// IDN (Internationalized Domain Name) support
+    pub idn_support: bool,
+    /// IDN standard type (e.g., "IDNA2003", "IDNA2008", "UTS46", "UTS46_2003")
+    pub idn_type: Option<String>,
+    /// Minimum domain label length
+    pub min_length: Option<u32>,
+    /// Maximum domain label length
+    pub max_length: Option<u32>,
+
+    // -- Nameserver requirements --
+    /// Minimum number of nameservers required
+    pub nameservers_min: Option<u32>,
+    /// Maximum number of nameservers allowed
+    pub nameservers_max: Option<u32>,
+
+    // -- Registration constraints --
+    /// Registration restrictions or policies, if any
+    pub restrictions: Option<String>,
+    /// ISO country codes allowed for registration (empty = no restrictions)
+    pub allowed_countries: Vec<String>,
+    /// Whether domain transfer requires an auth code
+    pub transfer_auth_required: Option<bool>,
+    /// Whether creation requires prior registrant validation
+    pub creation_requires_prevalidation: Option<bool>,
+    /// Validation category if prevalidation is required
+    pub validation_category: Option<String>,
+
+    // -- Periods (in years unless noted) --
+    /// Supported registration period lengths
+    pub create_periods: Vec<u32>,
+    /// Supported renewal period lengths
+    pub renew_periods: Vec<u32>,
+    /// Supported auto-renewal period lengths
+    pub auto_renew_periods: Vec<u32>,
+    /// Supported transfer period lengths
+    pub transfer_periods: Vec<u32>,
+    /// Redemption grace period in days
+    pub redemption_period: Option<u32>,
+    /// Add grace period in days
+    pub add_grace_period: Option<u32>,
+    /// Renew grace period in days
+    pub renew_grace_period: Option<u32>,
+    /// Auto-renew grace period in days
+    pub auto_renew_grace_period: Option<u32>,
+    /// Transfer grace period in days
+    pub transfer_grace_period: Option<u32>,
+    /// Pending delete period in days
+    pub pending_delete_period: Option<u32>,
+
+    // -- Features --
+    /// Available features (e.g., CREATE, RENEW, TRANSFER, RESTORE, PRIVACY_PROTECT, REGISTRY_LOCK)
+    pub features: Vec<String>,
+    /// Premium domain support: "no", "regular", "create_only", "transfer_from_registry"
+    pub premium_support: Option<String>,
+    /// Whether restore fee includes a renewal
+    pub restore_includes_renew: Option<bool>,
+    /// Renewal behavior on transfer: "no_change", "renew_unless_grace", "renewal", "new_period"
+    pub renewal_on_transfer: Option<String>,
+
+    // -- Contact requirements --
+    /// Contact requirements per type
+    pub contacts: Vec<ContactRequirements>,
+
+    // -- DNSSEC --
+    /// Maximum number of DNSSEC records allowed
+    pub allowed_dnssec_records: Option<u32>,
+    /// Supported DNSSEC algorithm numbers
+    pub allowed_dnssec_algorithms: Vec<u32>,
+
+    // -- Privacy --
+    /// WHOIS data exposure level: "none", "limited", "full", "unknown"
+    pub whois_exposure: Option<String>,
+    /// GDPR category: "eu_based", "adequacy", "data_export", "unknown"
+    pub gdpr_category: Option<String>,
+    /// Legal jurisdiction for registrations
+    pub jurisdiction: Option<String>,
 }
 
 /// Query and retrieve TLD information.
