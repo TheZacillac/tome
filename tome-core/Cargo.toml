@@ -17,5 +17,8 @@ rusqlite = { workspace = true }
 once_cell = { workspace = true }
 chrono = { workspace = true }
 
+[lints]
+workspace = true
+
 [dev-dependencies]
 tokio-test = "0.4"
