@@ -32,7 +32,6 @@ cors_origins = os.getenv("TOME_CORS_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -52,4 +51,5 @@ def run():
 
     host = os.getenv("TOME_HOST", "0.0.0.0")
     port = int(os.getenv("TOME_PORT", "8000"))
-    uvicorn.run("tome_api.main:app", host=host, port=port, reload=True)
+    reload = os.getenv("TOME_RELOAD", "false").lower() in ("true", "1", "yes")
+    uvicorn.run("tome_api.main:app", host=host, port=port, reload=reload)

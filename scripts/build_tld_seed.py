@@ -89,7 +89,7 @@ def make_default_tld(tld: str, tld_type: str, registry: str) -> dict:
         "registry": registry,
         "whois_server": whois,
         "rdap_url": rdap,
-        "dnssec": "signed" if not is_infra else "signed",
+        "dnssec": "signed" if is_infra else "unknown",
         "idn_support": False,
         "references": [],
         "allowed_countries": [],
