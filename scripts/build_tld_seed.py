@@ -8,6 +8,7 @@ Output: data/tlds.json with all IANA TLDs, enriched where we have metadata.
 """
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -219,8 +220,13 @@ def main():
     print(f"  - {new_count} new from IANA")
     print(f"  - {sld_count} SLDs from existing data (not in IANA root)")
 
-    with open(OUTPUT_FILE, "w") as f:
-        json.dump(result, f, indent=2, ensure_ascii=False)
+    import tempfile
+    with tempfile.NamedTemporaryFile(
+        "w", dir=OUTPUT_FILE.parent, suffix=".tmp", delete=False, encoding="utf-8"
+    ) as tmp:
+        json.dump(result, tmp, indent=2, ensure_ascii=False)
+        tmp_path = tmp.name
+    os.replace(tmp_path, OUTPUT_FILE)
     print(f"\nWritten to {OUTPUT_FILE}")
 
 

@@ -21,6 +21,9 @@ pub enum TomeError {
 
     #[error("Serialization error: {0}")]
     SerializationError(#[from] serde_json::Error),
+
+    #[error("Database error: {0}")]
+    DatabaseError(#[from] rusqlite::Error),
 }
 
 impl TomeError {
@@ -33,6 +36,7 @@ impl TomeError {
             TomeError::InvalidQuery(msg) => format!("Invalid query: {msg}"),
             TomeError::DataError(_) => "Internal data error".to_string(),
             TomeError::SerializationError(_) => "Serialization error".to_string(),
+            TomeError::DatabaseError(_) => "Database error".to_string(),
         }
     }
 }

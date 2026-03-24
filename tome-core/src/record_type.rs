@@ -84,6 +84,9 @@ impl RecordTypeDatabase {
     /// Search record types by partial name, summary, or description match.
     pub fn search(&self, query: &str) -> Vec<&RecordType> {
         let query_lower = query.to_lowercase();
+        if query_lower.trim().is_empty() {
+            return Vec::new();
+        }
         self.entries
             .iter()
             .filter(|e| {

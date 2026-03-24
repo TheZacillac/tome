@@ -84,6 +84,9 @@ impl GlossaryDatabase {
     /// Search glossary terms by partial match on term, abbreviation, summary, or description.
     pub fn search(&self, query: &str) -> Vec<&GlossaryTerm> {
         let query_lower = query.to_lowercase();
+        if query_lower.trim().is_empty() {
+            return Vec::new();
+        }
         self.entries
             .iter()
             .filter(|e| {

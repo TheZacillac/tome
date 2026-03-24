@@ -23,7 +23,7 @@ impl std::fmt::Display for OutputFormat {
 impl std::str::FromStr for OutputFormat {
     type Err = String;
 
-    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
             "human" => Ok(OutputFormat::Human),
             "json" => Ok(OutputFormat::Json),
@@ -46,7 +46,7 @@ impl OutputFormatter {
 
     /// Format a serializable value into a string.
     pub fn format<T: Serialize>(&self, value: &T) -> crate::error::Result<String> {
-        match self.format {
+        match &self.format {
             OutputFormat::Json => {
                 serde_json::to_string_pretty(value).map_err(crate::error::TomeError::from)
             }

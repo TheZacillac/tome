@@ -217,7 +217,15 @@ pub struct TldDatabase {
 
 impl TldDatabase {
     /// Create a new TLD database from a list of entries.
+    /// Normalizes all TLD strings to lowercase with no leading dot.
     pub fn new(entries: Vec<Tld>) -> Self {
+        let entries = entries
+            .into_iter()
+            .map(|mut e| {
+                e.tld = e.tld.to_lowercase().trim_start_matches('.').to_string();
+                e
+            })
+            .collect();
         Self { entries }
     }
 
@@ -230,12 +238,16 @@ impl TldDatabase {
     /// Search TLDs by partial name or description match.
     pub fn search(&self, query: &str) -> Vec<&Tld> {
         let query_lower = query.to_lowercase();
+        let query_stripped = query_lower.trim_start_matches('.');
+        if query_stripped.is_empty() {
+            return Vec::new();
+        }
         self.entries
             .iter()
             .filter(|e| {
-                e.tld.contains(&query_lower)
-                    || e.name.to_lowercase().contains(&query_lower)
-                    || e.registry.to_lowercase().contains(&query_lower)
+                e.tld.contains(query_stripped)
+                    || e.name.to_lowercase().contains(query_stripped)
+                    || e.registry.to_lowercase().contains(query_stripped)
             })
             .collect()
     }

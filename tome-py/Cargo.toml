@@ -11,9 +11,13 @@ description = "Python bindings for Tome — a reference database for internet TL
 name = "_tome"
 crate-type = ["cdylib"]
 
+[features]
+extension-module = ["pyo3/extension-module"]
+abi3-py39 = ["pyo3/abi3-py39"]
+
 [dependencies]
 tome-core = { version = "0.1.0", path = "../tome-core" }
-pyo3 = { workspace = true }
+pyo3 = { workspace = true, default-features = false }
 serde = { workspace = true }
 serde_json = { workspace = true }
 
