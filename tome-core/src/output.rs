@@ -50,9 +50,11 @@ impl OutputFormatter {
             OutputFormat::Json => {
                 serde_json::to_string_pretty(value).map_err(crate::error::TomeError::from)
             }
-            _ => {
-                // Human, Yaml, and Markdown formatting will be implemented
-                // as display logic is built out for each data type.
+            other => {
+                tracing::warn!(
+                    format = %other,
+                    "Requested output format is not yet implemented, falling back to JSON"
+                );
                 serde_json::to_string_pretty(value).map_err(crate::error::TomeError::from)
             }
         }

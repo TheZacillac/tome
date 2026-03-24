@@ -10,7 +10,6 @@ from slowapi.util import get_remote_address
 
 from tome_api.routers import glossary, records, tlds
 
-log_format = os.getenv("TOME_LOG_FORMAT", "text")
 log_level = os.getenv("TOME_LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=getattr(logging, log_level, logging.INFO))
 logger = logging.getLogger(__name__)

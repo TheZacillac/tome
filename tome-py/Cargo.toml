@@ -8,7 +8,7 @@ repository.workspace = true
 description = "Python bindings for Tome — a reference database for internet TLDs, DNS record types, and domain name terminology"
 
 [lib]
-name = "tome"
+name = "_tome"
 crate-type = ["cdylib"]
 
 [dependencies]
@@ -19,8 +19,3 @@ serde_json = { workspace = true }
 
 [lints]
 workspace = true
-
-[features]
-default = []
-extension-module = ["pyo3/extension-module"]
-abi3-py39 = ["pyo3/abi3-py39"]

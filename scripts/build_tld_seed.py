@@ -35,10 +35,12 @@ WHOIS_SERVERS = {
     "org": "whois.pir.org",
     "edu": "whois.educause.edu",
     "gov": "whois.dotgov.gov",
-    "mil": None,
     "int": "whois.iana.org",
     "arpa": "whois.iana.org",
 }
+
+# TLDs known to have no WHOIS service
+NO_WHOIS_TLDS = {"mil"}
 
 # Well-known new gTLD registries and their WHOIS/RDAP patterns
 REGISTRY_WHOIS = {
@@ -73,13 +75,15 @@ def make_default_tld(tld: str, tld_type: str, registry: str) -> dict:
     # Determine WHOIS server
     whois = WHOIS_SERVERS.get(tld)
     rdap = None
-    if whois is None and registry in REGISTRY_WHOIS:
+    if tld in NO_WHOIS_TLDS:
+        whois = None
+    elif whois is None and registry in REGISTRY_WHOIS:
         ws, rd = REGISTRY_WHOIS[registry]
         if ws:
             whois = ws.format(tld=tld)
         if rd:
             rdap = rd.format(tld=tld)
-    if whois is None and (is_new_gtld or is_cctld):
+    if whois is None and tld not in NO_WHOIS_TLDS and (is_new_gtld or is_cctld):
         whois = f"whois.nic.{tld}"
 
     entry = {
@@ -143,14 +147,14 @@ def parse_iana_root_db(path: Path) -> dict[str, tuple[str, str]]:
     return entries
 
 
-def parse_iana_tld_list(path: Path) -> list[str]:
+def parse_iana_tld_list(path: Path) -> set[str]:
     """Parse the IANA TLD alpha list."""
-    tlds = []
+    tlds = set()
     with open(path) as f:
         for line in f:
             line = line.strip()
             if line and not line.startswith("#"):
-                tlds.append(line.lower())
+                tlds.add(line.lower())
     return tlds
 
 

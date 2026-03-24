@@ -99,6 +99,14 @@ impl RecordTypeDatabase {
         self.entries.iter().filter(|e| e.common).collect()
     }
 
+    /// List all record types with a given status.
+    pub fn by_status(&self, status: &RecordStatus) -> Vec<&RecordType> {
+        self.entries
+            .iter()
+            .filter(|e| &e.status == status)
+            .collect()
+    }
+
     /// Return the total number of record types in the database.
     pub fn count(&self) -> usize {
         self.entries.len()

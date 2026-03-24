@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
-use tome_core::{GlossaryDatabase, RecordTypeDatabase, TldDatabase};
+use tome_core::{GlossaryDatabase, RecordStatus, RecordTypeDatabase, TldDatabase};
 
 use std::sync::OnceLock;
 
@@ -64,6 +64,27 @@ fn record_search(py: Python<'_>, query: &str) -> PyResult<Vec<PyObject>> {
         .collect()
 }
 
+/// List DNS record types by status (active, experimental, obsolete, reserved).
+#[pyfunction]
+fn record_by_status(py: Python<'_>, status: &str) -> PyResult<Vec<PyObject>> {
+    let status = match status.to_lowercase().as_str() {
+        "active" => RecordStatus::Active,
+        "experimental" => RecordStatus::Experimental,
+        "obsolete" => RecordStatus::Obsolete,
+        "reserved" => RecordStatus::Reserved,
+        _ => {
+            return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Invalid status: {status}. Expected one of: active, experimental, obsolete, reserved"
+            )));
+        }
+    };
+    let db = RECORD_DB.get_or_init(|| RecordTypeDatabase::new(Vec::new()));
+    db.by_status(&status)
+        .iter()
+        .map(|rt| Ok(to_py_dict(py, rt)?.into()))
+        .collect()
+}
+
 /// Look up a glossary term.
 #[pyfunction]
 fn glossary_lookup(py: Python<'_>, query: &str) -> PyResult<Option<PyObject>> {
@@ -85,11 +106,13 @@ fn glossary_search(py: Python<'_>, query: &str) -> PyResult<Vec<PyObject>> {
 }
 
 #[pymodule]
+#[pyo3(name = "_tome")]
 fn _tome(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(tld_lookup, m)?)?;
     m.add_function(wrap_pyfunction!(tld_search, m)?)?;
     m.add_function(wrap_pyfunction!(record_lookup, m)?)?;
     m.add_function(wrap_pyfunction!(record_search, m)?)?;
+    m.add_function(wrap_pyfunction!(record_by_status, m)?)?;
     m.add_function(wrap_pyfunction!(glossary_lookup, m)?)?;
     m.add_function(wrap_pyfunction!(glossary_search, m)?)?;
     Ok(())
