@@ -10,8 +10,14 @@ from slowapi.util import get_remote_address
 
 from tome_api.routers import glossary, records, tlds
 
-log_level = os.getenv("TOME_LOG_LEVEL", "INFO").upper()
-logging.basicConfig(level=getattr(logging, log_level, logging.INFO))
+# Configure logging via unified Arcanum module.
+try:
+    from arcanum._logging import configure_logging
+    configure_logging("tome-api")
+except ImportError:
+    log_level = os.getenv("ARCANUM_LOG_LEVEL",
+                          os.getenv("TOME_LOG_LEVEL", "INFO")).upper()
+    logging.basicConfig(level=getattr(logging, log_level, logging.INFO))
 logger = logging.getLogger(__name__)
 
 rate_limit = os.getenv("TOME_RATE_LIMIT", "60/minute")

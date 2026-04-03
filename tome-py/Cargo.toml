@@ -20,6 +20,9 @@ tome-core = { version = "0.1.0", path = "../tome-core" }
 pyo3 = { workspace = true, default-features = false }
 serde = { workspace = true }
 serde_json = { workspace = true }
+tracing = { workspace = true, features = ["log"] }
+log = "0.4"
+pyo3-log = "0.12"
 
 [lints]
 workspace = true

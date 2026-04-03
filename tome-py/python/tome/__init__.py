@@ -1,8 +1,15 @@
 """Tome — a reference database for internet TLDs, DNS record types, and domain name terminology."""
 
+# Forward Rust tracing events into Python logging.
+from tome._tome import init_rust_logging as _init_rust_logging
+_init_rust_logging()
+
 from tome._tome import (
     tld_lookup,
     tld_search,
+    tld_overview,
+    tld_list_by_type,
+    tld_count,
     record_lookup,
     record_search,
     record_by_status,
@@ -20,6 +27,9 @@ except PackageNotFoundError:
 __all__ = [
     "tld_lookup",
     "tld_search",
+    "tld_overview",
+    "tld_list_by_type",
+    "tld_count",
     "record_lookup",
     "record_search",
     "record_by_status",

@@ -361,15 +361,17 @@ SELECT
     wr.whois_server,
     wr.rdap_base_url,
     bp.phishing_abuse_risk,
-    bp.defensive_registration_recommended
+    bp.defensive_registration_recommended,
+    xfr.transfer_adds_year
 FROM tlds t
-LEFT JOIN tld_registry tr ON t.id = tr.tld_id AND tr.role = 'operator' AND tr.end_date IS NULL
-LEFT JOIN registry_operators ro ON tr.registry_operator_id = ro.id
+LEFT JOIN tld_registry treg ON t.id = treg.tld_id AND treg.role = 'operator' AND treg.end_date IS NULL
+LEFT JOIN registry_operators ro ON treg.registry_operator_id = ro.id
 LEFT JOIN tld_country_mapping cm ON t.id = cm.tld_id
 LEFT JOIN tld_registration_policy rp ON t.id = rp.tld_id
 LEFT JOIN tld_technical tech ON t.id = tech.tld_id
 LEFT JOIN tld_whois_rdap wr ON t.id = wr.tld_id
-LEFT JOIN tld_brand_protection bp ON t.id = bp.tld_id;
+LEFT JOIN tld_brand_protection bp ON t.id = bp.tld_id
+LEFT JOIN tld_transfer_rules xfr ON t.id = xfr.tld_id;
 
 CREATE VIEW IF NOT EXISTS v_tld_lifecycle_pricing AS
 SELECT

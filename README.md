@@ -4,7 +4,7 @@
 
 Tome provides a comprehensive, queryable knowledge base for the domain name industry with multiple interfaces: CLI, Rust library, Python library, REST API, and MCP server for AI assistants. It is the reference companion to [Seer](https://github.com/TheZacillac/seer) — where Seer diagnoses, Tome defines.
 
-> **Note:** Tome is in early development. The workspace structure and data models are in place, but datasets are not yet populated.
+> **Note:** Tome is in active development. The TLD database is seeded with data for 300+ TLDs including registry operators, WHOIS/RDAP servers, and country mappings. Record type and glossary databases are planned but not yet populated.
 
 ---
 
@@ -255,7 +255,7 @@ Add to `claude_desktop_config.json`:
 
 | Database | Coverage | Status |
 |----------|----------|--------|
-| **TLDs** | All IANA-delegated TLDs with type, registry, WHOIS/RDAP servers, DNSSEC, IDN support, restrictions, and delegation dates | Planned |
+| **TLDs** | 300+ IANA-delegated TLDs with type, registry operator, WHOIS/RDAP servers, DNSSEC status, country mappings, and transfer rules | **Active** |
 | **DNS Record Types** | All IANA-registered RR types with descriptions, RDATA formats, RFC references, and examples | Planned |
 | **Glossary** | DNS, registration, security, abuse, infrastructure, and protocol terminology | Planned |
 
@@ -318,11 +318,16 @@ RUST_LOG=debug tome tld com
 tome/
 ├── README.md               # This file
 ├── Cargo.toml              # Workspace configuration
-├── tome-core/              # Core Rust library (data models and query logic)
+├── tome-core/              # Core Rust library (data models, SQLite, query logic)
+│   ├── schema/
+│   │   └── tld_schema.sql  # SQLite schema definition
 │   └── src/
 │       ├── lib.rs          # Module exports
 │       ├── error.rs        # Error types
-│       ├── tld.rs          # TLD data model and database
+│       ├── db.rs           # SQLite database (TomeDb) — typed query layer
+│       ├── seed.rs         # Core TLD seed data (~90 TLDs)
+│       ├── seed_extended.rs # Extended seed data (~200+ ccTLDs, ~50 nTLDs)
+│       ├── tld.rs          # TLD data model (in-memory)
 │       ├── record_type.rs  # DNS record type data model and database
 │       ├── glossary.rs     # Glossary term data model and database
 │       └── output.rs       # Output formatters (human/JSON/YAML/Markdown)
@@ -353,6 +358,7 @@ tome/
 | Dependency | Purpose |
 |------------|---------|
 | Serde | Serialization (JSON, YAML) |
+| Rusqlite | SQLite database (bundled) |
 | Thiserror | Error handling |
 | Chrono | Date/time handling |
 

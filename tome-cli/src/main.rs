@@ -83,9 +83,7 @@ enum ListTarget {
 }
 
 fn main() -> Result<()> {
-    tracing_subscriber::fmt()
-        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
-        .init();
+    let _log_guard = tome_core::logging::init_logging("tome");
 
     let cli = Cli::parse();
 

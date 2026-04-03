@@ -40,6 +40,7 @@ impl TomeDb {
     fn initialize(&self) -> Result<()> {
         self.conn.execute_batch("PRAGMA journal_mode=WAL;")?;
         self.conn.execute_batch("PRAGMA foreign_keys=ON;")?;
+        self.conn.execute_batch("PRAGMA busy_timeout=5000;")?;
         self.conn.execute_batch(SCHEMA_SQL)?;
         Ok(())
     }
@@ -82,19 +83,30 @@ impl TomeDb {
                     created_at, updated_at
              FROM tlds WHERE tld = ?1",
         )?;
-        let row = stmt.query_row(params![normalized], TldRow::from_row).optional()?;
+        let row = stmt
+            .query_row(params![normalized], TldRow::from_row)
+            .optional()?;
         Ok(row)
     }
 
     /// Search TLDs by partial match on tld label or description.
     pub fn search_tlds(&self, query: &str) -> Result<Vec<TldRow>> {
-        let pattern = format!("%{}%", query.to_lowercase());
+        let query_lower = query.to_lowercase();
+        if query_lower.trim().is_empty() {
+            return Ok(Vec::new());
+        }
+        // Escape LIKE wildcards to prevent unintended pattern matching
+        let escaped = query_lower
+            .replace('\\', r"\\")
+            .replace('%', r"\%")
+            .replace('_', r"\_");
+        let pattern = format!("%{escaped}%");
         let mut stmt = self.conn.prepare(
             "SELECT id, tld, tld_ascii, dot_tld, tld_type, delegation_status,
                     iana_id, iana_delegation_date, iana_last_updated, description,
                     created_at, updated_at
              FROM tlds
-             WHERE tld LIKE ?1 OR LOWER(description) LIKE ?1
+             WHERE tld LIKE ?1 ESCAPE '\\' OR LOWER(description) LIKE ?1 ESCAPE '\\'
              ORDER BY tld",
         )?;
         let rows = stmt
@@ -547,7 +559,8 @@ impl TomeDb {
                     country_name, iso_3166_alpha2, registration_model,
                     requires_local_presence, supports_dnssec, allows_idn,
                     registry_lock_available, whois_server, rdap_base_url,
-                    phishing_abuse_risk, defensive_registration_recommended
+                    phishing_abuse_risk, defensive_registration_recommended,
+                    transfer_adds_year
              FROM v_tld_overview WHERE tld = ?1",
         )?;
         let row = stmt
@@ -563,7 +576,8 @@ impl TomeDb {
                     country_name, iso_3166_alpha2, registration_model,
                     requires_local_presence, supports_dnssec, allows_idn,
                     registry_lock_available, whois_server, rdap_base_url,
-                    phishing_abuse_risk, defensive_registration_recommended
+                    phishing_abuse_risk, defensive_registration_recommended,
+                    transfer_adds_year
              FROM v_tld_overview ORDER BY tld",
         )?;
         let rows = stmt
@@ -613,7 +627,11 @@ pub struct TldRow {
     pub iana_delegation_date: Option<String>,
     pub iana_last_updated: Option<String>,
     pub description: Option<String>,
+    /// Internal timestamp — excluded from serialized output by default.
+    #[serde(skip_serializing)]
     pub created_at: Option<String>,
+    /// Internal timestamp — excluded from serialized output by default.
+    #[serde(skip_serializing)]
     pub updated_at: Option<String>,
 }
 
@@ -885,6 +903,7 @@ pub struct TldOverviewRow {
     pub rdap_base_url: Option<String>,
     pub phishing_abuse_risk: Option<String>,
     pub defensive_registration_recommended: Option<bool>,
+    pub transfer_adds_year: Option<bool>,
 }
 
 impl TldOverviewRow {
@@ -905,6 +924,7 @@ impl TldOverviewRow {
             rdap_base_url: row.get(12)?,
             phishing_abuse_risk: row.get(13)?,
             defensive_registration_recommended: row.get(14)?,
+            transfer_adds_year: row.get(15)?,
         })
     }
 }
@@ -1069,10 +1089,7 @@ mod tests {
         let ov = overview.expect("should exist");
         assert_eq!(ov.tld, "com");
         assert_eq!(ov.registry_operator.as_deref(), Some("VeriSign, Inc."));
-        assert_eq!(
-            ov.whois_server.as_deref(),
-            Some("whois.verisign-grs.com")
-        );
+        assert_eq!(ov.whois_server.as_deref(), Some("whois.verisign-grs.com"));
     }
 
     #[test]
